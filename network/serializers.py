@@ -1,4 +1,4 @@
-from .models import User, Advisor
+from .models import User, Advisor, BookedCalls
 from rest_framework import serializers
 
 
@@ -36,3 +36,11 @@ class AdvisorSerializer(serializers.ModelSerializer):
 
     def create(self,validated_data):
         return Advisor.objects.create(**validated_data)
+
+class BookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookedCalls
+        fields = ['appointment_time','id']
+
+    def create(self,validated_data):
+        return BookedCalls.objects.create(**validated_data)

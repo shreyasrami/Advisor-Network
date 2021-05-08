@@ -2,9 +2,12 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer, AdvisorSerializer
+from .serializers import RegisterSerializer, LoginSerializer, AdvisorSerializer, BookingSerializer
 from django.contrib import auth
-from .models import User, Advisor
+from .models import User, Advisor, BookedCalls
+from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
+from .permissions import NotUser
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_200_OK
 
 # Create your views here.
@@ -20,8 +23,7 @@ class RegisterUserView(generics.GenericAPIView):
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
             data = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                'token': str(refresh.access_token),
                 'user_id':user.id
             }
             return Response(data,status=HTTP_200_OK)
@@ -39,8 +41,7 @@ class LoginUserView(generics.GenericAPIView):
             if user is not None:
                 refresh = RefreshToken.for_user(user)
                 data = {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
+                    'token': str(refresh.access_token),
                     'user_id':user.id
                 }
                 return Response(data,status=HTTP_200_OK)
@@ -56,9 +57,14 @@ class AdvisorView(generics.GenericAPIView):
     serializer_class = AdvisorSerializer
     queryset = Advisor.objects.all()
 
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return (IsAuthenticated(),)
+        else:
+            return (NotUser(),)
+
     def get(self,request,*args,**kwargs):
         advisors = Advisor.objects.all()
-        print(advisors)
         serializer = AdvisorSerializer(advisors,many=True)
     
         return Response(serializer.data)
@@ -68,6 +74,45 @@ class AdvisorView(generics.GenericAPIView):
         serializer = AdvisorSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            return Response(status=HTTP_200_OK)
+        else:
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+
+
+    
+class AllBookingsView(generics.GenericAPIView):
+    
+    serializer_class = BookingSerializer
+    queryset = BookedCalls.objects.all()
+    permission_classes = [IsAuthenticated,]
+
+    def get(self,request,*args,**kwargs):
+        bookings = list(BookedCalls.objects.filter(user=kwargs['user_id']).values())
+
+        for booking in bookings:
+            advisor = Advisor.objects.get(id=booking['advisor_id'])
+            del booking['user_id']
+            del booking['advisor_id']
+            booking['advisor_name'] = advisor.advisor_name
+            booking['advisor_profile_pic'] = advisor.photo_url 
+            booking['advisor_id'] = advisor.id
+        
+        return Response(bookings,status=HTTP_200_OK)
+
+
+class MakeBookingView(generics.GenericAPIView):
+    serializer_class = BookingSerializer
+    queryset = BookedCalls.objects.all()
+    permission_classes = [IsAuthenticated,]
+
+    def post(self,request,*args,**kwargs):
+
+        serializer = BookingSerializer(data=request.data)
+        if serializer.is_valid():
+            user = User.objects.get(id=kwargs['user_id'])
+            advisor = Advisor.objects.get(id=kwargs['advisor_id'])
+            serializer.save(user=user,advisor=advisor)
             return Response(status=HTTP_200_OK)
         else:
             return Response(status=HTTP_400_BAD_REQUEST)
