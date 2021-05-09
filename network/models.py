@@ -80,4 +80,4 @@ class BookedCalls(models.Model):
         verbose_name_plural = 'Booked Calls'
 
     def __str__(self):
-        return self.advisor.advisor_name + self.user.name + str(self.id)
+        return self.advisor.advisor_name + "_" + self.user.name + "_" + str(self.id)

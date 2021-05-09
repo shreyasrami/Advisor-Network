@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'network.apps.NetworkConfig',
+    'drf_yasg',
 
 ]
 
@@ -70,6 +71,11 @@ TEMPLATES = [
         },
     },
 ]
+TEMPLATE_LOADERS = (
+
+'django.template.loaders.eggs.Loader',
+
+)
 
 AUTH_USER_MODEL = 'network.User'
 
@@ -108,6 +114,23 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "api_key": {"type": "apiKey", "in": "header", "name": "Authorization"}
+    },
+    "DOC_EXPANSION": "none",
+    "APIS_SORTER": "alpha",
+    "OPERATIONS_SORTER": None,
+    "JSON_EDITOR": False,
+    "SHOW_REQUEST_HEADERS": False,
+    "SUPPORTED_SUBMIT_METHODS": ["get", "post", "put", "delete", "patch"],
+}
+
+REDOC_SETTINGS = {
+    "LAZY_RENDERING": True,
+}
+
 
 LANGUAGE_CODE = 'en-us'
 

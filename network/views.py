@@ -74,9 +74,9 @@ class AdvisorView(generics.GenericAPIView):
         serializer = AdvisorSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(status=HTTP_200_OK)
+            return Response({"status":"200_OK"},status=HTTP_200_OK)
         else:
-            return Response(status=HTTP_400_BAD_REQUEST)
+            return Response({"status":"400_BAD_REQUEST"},status=HTTP_400_BAD_REQUEST)
 
 
 
@@ -113,7 +113,7 @@ class MakeBookingView(generics.GenericAPIView):
             user = User.objects.get(id=kwargs['user_id'])
             advisor = Advisor.objects.get(id=kwargs['advisor_id'])
             serializer.save(user=user,advisor=advisor)
-            return Response(status=HTTP_200_OK)
+            return Response({"status":"200_OK"},status=HTTP_200_OK)
         else:
             return Response(status=HTTP_400_BAD_REQUEST)
 
