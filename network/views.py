@@ -6,8 +6,7 @@ from .serializers import RegisterSerializer, LoginSerializer, AdvisorSerializer,
 from django.contrib import auth
 from .models import User, Advisor, BookedCalls
 from rest_framework import permissions
-from rest_framework.permissions import IsAuthenticated
-from .permissions import NotUser
+from rest_framework.permissions import AllowAny
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_200_OK
 
 # Create your views here.
@@ -56,12 +55,8 @@ class AdvisorView(generics.GenericAPIView):
     
     serializer_class = AdvisorSerializer
     queryset = Advisor.objects.all()
+    permission_classes = [AllowAny,]
 
-    def get_permissions(self):
-        if self.request.method in permissions.SAFE_METHODS:
-            return (IsAuthenticated(),)
-        else:
-            return (NotUser(),)
 
     def get(self,request,*args,**kwargs):
         advisors = Advisor.objects.all()
@@ -85,7 +80,7 @@ class AllBookingsView(generics.GenericAPIView):
     
     serializer_class = BookingSerializer
     queryset = BookedCalls.objects.all()
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [AllowAny,]
 
     def get(self,request,*args,**kwargs):
         bookings = list(BookedCalls.objects.filter(user=kwargs['user_id']).values())
@@ -104,7 +99,7 @@ class AllBookingsView(generics.GenericAPIView):
 class MakeBookingView(generics.GenericAPIView):
     serializer_class = BookingSerializer
     queryset = BookedCalls.objects.all()
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [AllowAny,]
 
     def post(self,request,*args,**kwargs):
 
